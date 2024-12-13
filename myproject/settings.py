@@ -1,20 +1,21 @@
 from datetime import timedelta
 from pathlib import Path
+from dotenv import load_dotenv
+import os
+
+# Load environment variables
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-s@=z*0-o$dhh@wbq3)paj8%vbgwb&0v#tmlt%u5i@u_3n==z!s'
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",")
 
 
 # Application definition
@@ -66,12 +67,19 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+# Database
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ.get("POSTGRES_DB", "onyx_dev"),
+        "USER": os.environ.get("POSTGRES_USER", "postgres"),
+        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "postgres"),
+        "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
+        "PORT": os.environ.get("POSTGRES_PORT", "5432"),
+        'CONN_MAX_AGE': 600, # Reutiliza conexões por 10 minutos
     }
 }
+
 
 
 # Password validation
@@ -129,8 +137,9 @@ SIMPLE_JWT = {
 
 # dj-rest-auth
 REST_AUTH = { 
-    "USE_JWT" : True , 
-    # "JWT_AUTH_COOKIE": "_auth", # Não enviar cookie de token de acesso 
-    # "JWT_AUTH_REFRESH_COOKIE": "_refresh", # Não enviar cookie de token de atualização 
-    "JWT_AUTH_HTTPONLY" : False ,   # Garante que o token de atualização seja enviado
- }
+    "USE_JWT": True,
+    "JWT_AUTH_COOKIE": "access_token",  # Nome do cookie de acesso
+    "JWT_AUTH_REFRESH_COOKIE": "refresh_token",  # Nome do cookie de atualização
+    "JWT_AUTH_HTTPONLY": True,  # Impede que os cookies sejam acessíveis via JavaScript
+    "JWT_AUTH_SECURE": True,  # Envia os cookies apenas via HTTPS
+}
